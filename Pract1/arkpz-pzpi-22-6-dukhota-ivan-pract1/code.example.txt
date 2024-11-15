@@ -1,1 +1,68 @@
+-- Функція для перевірки, чи є число парним
+-- Ім'я функції чітке та зрозуміле: "isEven"
+isEven :: Integer -> Bool
+isEven n = n `mod` 2 == 0
 
+-- Функція для форматованого виводу результату
+-- Відповідає за виведення лише одного повідомлення
+printEvenResult :: Integer -> IO ()
+printEvenResult number = do
+    -- Використання let для проміжного результату
+    let resultMessage = if isEven number
+                        then "number " ++ show number ++ " is even."
+                        else "number " ++ show number ++ " is odd."
+    putStrLn resultMessage
+
+-- Головна функція для запуску програми
+main :: IO ()
+main = do
+    putStrLn "Type number to check if it even :"
+    input <- getLine
+    -- Чітка структура відступів для зручності читання
+    let number = read input :: Integer  -- Використання let для локальної змінної
+    printEvenResult number  -- Виклик функції для виведення результату
+
+
+
+-- Функція для обчислення факторіалу числа
+factorial :: Integer -> Integer
+factorial 0 = 1
+factorial n = n * factorial (n - 1)
+
+-- Неправильний варіант:
+-- fact n = n * factorial (n - 1)
+-- (Порушення правила іменування: нечітке ім'я `fact` замість `factorial`)
+
+-- Функція для обчислення значення з інкрементом обох аргументів
+calculate :: Integer -> Integer -> Integer
+calculate x y = result
+  where
+    increment a = a + 1
+    result = (increment x) * (increment y)
+
+-- Неправильний варіант:
+-- calc x y = if x == 0 then 1 else x * calc (x - 1) y
+-- (Порушення правила pattern matching: використання зайвих умов замість pattern matching)
+
+
+-- Функція для форматованого виводу результату
+printValue :: Integer -> IO ()
+printValue value = putStrLn ("The result is: " ++ show value)
+
+-- Неправильний варіант:
+-- displayResult value = putStrLn ("Result: " ++ show value ++ ". Value squared is: " ++ show (value * value))
+-- (Порушення правила єдиної відповідальності: функція `displayResult` виконує більше ніж одну дію — виводить результат і квадрат значення)
+
+-- Головна функція
+main :: IO ()
+main = do
+  let x = 2
+      y = 3
+  printValue (calculate x y)
+
+-- Неправильний варіант:
+-- main = do
+-- let x = 2
+-- putStrLn ("Calculating result for: " ++ show x)
+-- printResult (calc x y)
+-- (Порушення правила відступів: різні рівні відступів роблять код важким для читання)
