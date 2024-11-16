@@ -32,6 +32,74 @@
 1.3 Хід роботи
 1) Було обрано мову програмування Haskell для аналізу і рефакторингу коду і покращення його якості.
 2) Було написано приклад коду для демонстрації правил написання ефективного, підтримуваного та чистого коду.
+1. Функція для обчислення факторіалу числа
+2. factorial :: Integer -> Integer
+3. factorial 0 = 1
+4. factorial n = n * factorial (n - 1)
+5. Неправильний варіант:
+6. fact n = n * factorial (n - 1)
+7. (Порушення правила іменування: нечітке ім'я `fact` 
+замість `factorial`)
+8. Функція для обчислення значення з інкрементом обох 
+аргументів
+9. calculate :: Integer -> Integer -> Integer
+10. calculate x y = result
+11. where
+12. increment a = a + 1
+13. result = (increment x) * (increment y)
+14. Неправильний варіант:
+15. calc x y = if x == 0 then 1 else x * calc (x - 1) 
+y
+16. (Порушення правила pattern matching: використання 
+зайвих умов замість pattern matching)
+17. Функція для форматованого виводу результату
+18. printValue :: Integer -> IO ()
+19. printValue value = putStrLn ("The result is: " ++ 
+show value)
+20. Неправильний варіант:
+21. displayResult value = putStrLn ("Result: " ++ show 
+value ++ ". Value squared is: " ++ show (value * value))
+22. (Порушення правила єдиної відповідальності: функція 
+`displayResult` виконує більше ніж одну дію — виводить 
+результат і квадрат значення)
+23. Головна функція
+24. main :: IO ()
+25. main = do
+26. let x = 2
+a. y = 3
+27. printValue (calculate x y)
+28. Неправильний варіант:
+29. main = do
+30. let x = 2
+31. putStrLn ("Calculating result for: " ++ show x)
+32. printResult (calc x y)
+33. (Порушення правила відступів: різні рівні відступів 
+роблять код важким для читання)
+34. Функція для перевірки, чи є число парним
+35. Ім'я функції чітке та зрозуміле: "isEven"
+36. isEven :: Integer -> Bool
+37. isEven n = n `mod` 2 == 0
+38. Функція для форматованого виводу результату
+39. Відповідає за виведення лише одного повідомлення
+40. printEvenResult :: Integer -> IO ()
+41. printEvenResult number = do
+42. Використання let для проміжного результату
+43. let resultMessage = if isEven number
+i. then "number " ++ show number 
+++ " is even."
+ii. else "number " ++ show number 
+++ " is odd."
+44. putStrLn resultMessage
+45. Головна функція для запуску програми
+46. main :: IO ()
+47. main = do
+48. putStrLn "Type number to check if it even :"
+49. input <- getLine
+50. Чітка структура відступів для зручності читання
+51. let number = read input :: Integer -- Використання 
+let для локальної змінної
+52. printEvenResult number -- Виклик функції для 
+виведення результату
 3) Створено презентацію в якій розглянуті рекомендації для написання чистого та якісного коду на мові програмування Haskell.
 	1.4 Висновок
 	Під час виконання практичної роботи ознайомився з основними рекомендаціями щодо написання чистого коду для різних мов програмування, а також навчився аналізувати та рефакторити код для покращення його якості. 
