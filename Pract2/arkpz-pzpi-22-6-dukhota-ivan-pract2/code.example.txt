@@ -1,1 +1,70 @@
+--Перший метод: до рефакторингу
+data Circle = Circle { radius :: Double }
+data Square = Square { side :: Double }
+
+calculateAreaCircle :: Circle -> Double
+calculateAreaCircle (Circle r) = pi * r * r
+
+calculateAreaSquare :: Square -> Double
+calculateAreaSquare (Square s) = s * s
+
+--Другий метод: до рефакторингу
+
+data Vehicle = Car | Bike | Truck
+
+vehicleSpeed :: Vehicle -> Int
+vehicleSpeed Car = 120
+vehicleSpeed Bike = 50
+vehicleSpeed Truck = 80
+
+--Третій метод: до рефакторингу
+data User = User { name :: String, age :: Int }
+
+getOlder :: User -> User
+getOlder user = user { age = (age user) + 1 }
+
+changeUserName :: User -> String -> User
+changeUserName user newName = user { name = newName }
+
+
+
+
+
+
+
+
+--Перший метод: після рефакторингу
+data Shape = Circle { radius :: Double } | Square { side :: Double }
+
+calculateArea :: Shape -> Double
+calculateArea (Circle r) = pi * r * r
+calculateArea (Square s) = s * s
+
+--Другий метод: після рефакторингу
+data Vehicle = Car | Bike | Truck
+
+class VehicleClass a where
+  speed :: a -> Int
+
+data Car = Car
+data Bike = Bike
+data Truck = Truck
+
+instance VehicleClass Car where
+  speed _ = 120
+
+instance VehicleClass Bike where
+  speed _ = 50
+
+instance VehicleClass Truck where
+  speed _ = 80
+
+--Третій метод: після рефакторингу
+data User = User { name :: String, age :: Int }
+
+getOlder :: User -> User
+getOlder user = User { name = name user, age = age user + 1 }
+
+changeUserName :: User -> String -> User
+changeUserName user newName = User { name = newName, age = age user }
 
