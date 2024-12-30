@@ -1,0 +1,92 @@
+# main/tests.py
+
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
+from .models import User, Student, Sensor, Incident
+
+class UserRegistrationTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_register_student(self):
+        url = reverse('register')
+        data = {
+            'username': 'student1',
+            'password': 'password123',
+            'role': 'student',
+            'first_name': 'Іван',
+            'last_name': 'Петренко',
+            'date_of_birth': '2005-05-15',
+            'student_class': '10A'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(User.objects.filter(username='student1').exists())
+        self.assertTrue(Student.objects.filter(user__username='student1').exists())
+
+
+class IncidentViewSetTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.admin_user = User.objects.create_superuser(username='admin', password='adminpass', role='staff')
+        self.client.force_authenticate(user=self.admin_user)
+        self.sensor = Sensor.objects.create(type='fire', location='Коридор', status=True)
+
+    def test_create_incident(self):
+        url = reverse('incident-list')
+        data = {
+            'type': 'fire',
+            'description': 'Виявлено дим у коридорі',
+            'severity': 5,
+            'sensor_id': self.sensor.id,
+            'report': True
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Incident.objects.count(), 1)
+        incident = Incident.objects.first()
+        self.assertTrue(incident.report)
+        self.assertEqual(incident.sensor, self.sensor)
+
+
+
+class PermissionTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        
+        self.admin_user = User.objects.create_superuser(
+            username='admin',
+            password='adminpass',
+            role='staff',
+            email='admin@example.com'
+        )
+        
+        self.staff_user = User.objects.create_user(
+            username='staff',
+            password='staffpass',
+            role='staff',
+            email='staff@example.com'
+        )
+        
+        self.student_user = User.objects.create_user(
+            username='student',
+            password='studentpass',
+            role='student',
+            email='student@example.com'
+        )
+
+    def test_admin_access(self):
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(reverse('user-list'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_staff_access(self):
+        self.client.force_authenticate(user=self.staff_user)
+        response = self.client.get(reverse('user-list'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_student_access(self):
+        self.client.force_authenticate(user=self.student_user)
+        response = self.client.get(reverse('student-list'))
+        self.assertEqual(response.status_code, 200)
