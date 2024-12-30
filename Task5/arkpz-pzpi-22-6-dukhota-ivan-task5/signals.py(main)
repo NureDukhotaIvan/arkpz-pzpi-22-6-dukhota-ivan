@@ -1,0 +1,62 @@
+# main/signals.py
+
+from django.db.models.signals import post_save
+from django.core.mail import send_mail
+from django.conf import settings
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from .models import Attendance, Notification, Sensor, NotificationUser, User
+
+@receiver(post_save, sender=Attendance)
+def create_attendance_notification(sender, instance, created, **kwargs):
+    if created:
+        if instance.student:
+            message = f"Студент {instance.student} має статус {instance.status} на дату {instance.attendance_date}."
+            parent = instance.student.parents.first()
+            if parent:
+                Notification.objects.create(message=message, parent=parent)
+        elif instance.staff:
+            message = f"Стафф {instance.staff} має статус {instance.status} на дату {instance.attendance_date}."
+            Notification.objects.create(message=message, staff=instance.staff)
+
+
+
+@receiver(post_save, sender=Sensor)
+def set_default_danger_percentage(sender, instance, created, **kwargs):
+    if created:
+        default_values = {
+            'fire': 30,
+            'smoke': 10,
+            'gas': 15,
+            'temperature': 60,
+        }
+        if instance.type in default_values:
+            instance.danger_percentage = default_values[instance.type]
+            instance.save(update_fields=['danger_percentage'])
+
+
+
+@receiver(post_save, sender=Notification)
+def notify_users(sender, instance, created, **kwargs):
+    if created:
+        users = User.objects.all()
+
+        notification_users = []
+        for user in users:
+            notification_users.append(NotificationUser(notification=instance, user=user))
+            
+            if user.email:
+                try:
+                    send_mail(
+                        subject='New Notification',
+                        message=instance.message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Ошибка при отправке email для пользователя {user.id}: {e}")
+        try:
+            NotificationUser.objects.bulk_create(notification_users)
+        except Exception as e:
+            print(f"Ошибка при добавлении записей в NotificationUser: {e}")
