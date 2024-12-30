@@ -1,0 +1,81 @@
+# main/admin.py
+
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import (
+    User, Student, Parent, Staff, Sensor,
+    Camera, Incident, Attendance, Notification, NotificationUser
+)
+from django.utils.html import format_html
+
+
+class UserAdmin(BaseUserAdmin):
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Roles', {'fields': ('role',)}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Contact info', {'fields': ('email',)}),  
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'role', 'email', 'password1', 'password2'),
+        }),
+    )
+    list_display = ('username', 'email', 'role', 'is_staff')
+    search_fields = ('username', 'email')
+    ordering = ('username',)
+
+admin.site.register(User, UserAdmin)
+
+class ParentInline(admin.TabularInline):
+    model = Parent
+    extra = 1
+
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'student_class', 'user')
+    search_fields = ('first_name', 'last_name', 'student_class')
+    inlines = [ParentInline]
+
+@admin.register(Incident)
+class IncidentAdmin(admin.ModelAdmin):
+    list_display = ('type', 'severity', 'date', 'sensor', 'camera', 'report', 'view_notification')
+    list_filter = ('type', 'severity', 'report')
+    search_fields = ('description',)
+
+    def view_notification(self, obj):
+        if obj.notifications.exists():
+            notification = obj.notifications.first()
+            url = f"/admin/main/notification/{notification.id}/change/"
+            return format_html('<a href="{}">Переглянути</a>', url)
+        return "Немає"
+    view_notification.short_description = 'Сповіщення'
+
+@admin.register(Staff)
+class StaffAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'position', 'user')
+    search_fields = ('first_name', 'last_name', 'position')
+
+@admin.register(Sensor)
+class SensorAdmin(admin.ModelAdmin):
+    list_display = ('type', 'location', 'status', 'danger_percentage')  
+    list_filter = ('type', 'status')
+    search_fields = ('location',)
+
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ('student', 'staff', 'attendance_date', 'status')
+    list_filter = ('status', 'attendance_date')
+    search_fields = ('student__first_name', 'student__last_name', 'staff__first_name', 'staff__last_name')
+
+@admin.register(NotificationUser)
+class NotificationUserAdmin(admin.ModelAdmin):
+    list_display = ('notification', 'user')
+    search_fields = ('notification__message', 'user__username')
+
+
+admin.site.register(Parent)
+admin.site.register(Camera)
+admin.site.register(Notification)
