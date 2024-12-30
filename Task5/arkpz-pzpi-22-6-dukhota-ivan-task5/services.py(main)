@@ -1,0 +1,14 @@
+# main/services.py
+
+from .models import Incident, Notification
+
+def handle_incident_report(incident_id):
+    try:
+        incident = Incident.objects.get(id=incident_id)
+        if incident.severity >= 4:
+            Notification.objects.create(
+                message=f"Серйозний інцидент: {incident.type} - {incident.description}",
+                incident=incident
+            )
+    except Incident.DoesNotExist:
+        pass
